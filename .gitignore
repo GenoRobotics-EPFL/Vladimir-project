@@ -1,7 +1,9 @@
 
-./allData
-./fastqpass
+allData/
+fastqpass/
 
-./outputSpoa/*
-./outputMedaka/*
-./outputBlastn/*
+outputSpoa/
+outputMedaka/
+outputBlastn/
+
+src/__pycache__/

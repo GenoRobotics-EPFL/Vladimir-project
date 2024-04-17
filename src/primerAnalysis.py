@@ -1,0 +1,33 @@
+import spoa
+
+from dataRetriever import *
+import utils
+
+def findPrimer(sequence):
+
+    primer = "ATG TCA CCA CAA ACA GAG ACT AAA GC".replace(" ", "")
+
+    reverse = utils.reverse(sequence)
+    comp = utils.complementary(sequence)
+    revComp = utils.complementary(reverse)
+
+    _ , msa = spoa.poa([sequence, primer], e=-100)
+    writeStringToFile("msaPrimer-Forward.fasta", "\n".join(msa))
+
+    _ , msa = spoa.poa([reverse, primer], e=-100)
+    writeStringToFile("msaPrimer-reverse.fasta", "\n".join(msa))
+
+    _ , msa = spoa.poa([comp, primer], e=-100)
+    writeStringToFile("msaPrimer-comp.fasta", "\n".join(msa))
+
+    _ , msa = spoa.poa([revComp, primer], e=-100)
+    writeStringToFile("msaPrimer-rev-comp.fasta", "\n".join(msa))
+
+def main():
+
+    cons = "ACAGAGACTAAAGCAAGTGTGGATTCAAAGCTGGTGTTAAAGAGTACAAATTGACTTATTATACTCCTGAGTACCAAACCAAGGATACTGATATATTAGCAGCATTCCGAGTAACTCCTCAACCTGGAGTTCCACCTGAAGAAGCAGGGGCCGCGGTAGCTGCCGAATCTTCTACTGGTACATGGACAACTGTATGGACCGATGGACTTACCAGTCTTGATCGTTACAAAGGGCGATGCTACCGCATCGAGCGCGTTGTTGGAGAAAAAGATCAATATATTGCTTATGTAGCTTACCCTTTAGACCTTTTTGAAGAAGGTTCCGTTACCAATATGTTTACTTCCATTGTAGGTAACGTATTTGGGTTCAAAGCCCTGCGCGCTCTACGTCTGGAAGATCTGCGAATCCCTCCTGCTTATGTTAAAACTTTCCAAGGTCCGCCTCATGGGATCCAAGTTGAAAGAGATAAATTGAACAAGTATGGTCGTCCCCTGTTGGGATGTACTATTAAACCTAAATTGGGGTTATCTGCAAAAAACTACGGTAGAGCTGTTTATGAATGTCTTCGCGGTGGACTTGATTTTACCAAAGATGATGAGAACGTGAACTCACAACCATTTATGCGTTGGAGAGATCGTTTCTTATTTTGTGCCGAAGCACTTTTTAAAGCACAGACTGAAACAGGTGAAATCAAAGGGCATTACTTGAATGCTACTGCG"
+
+    findPrimer(cons)
+
+if __name__ == "__main__":
+    main()
