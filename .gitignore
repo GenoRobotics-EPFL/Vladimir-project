@@ -1,6 +1,6 @@
 
-./allData/*
-./fastqpass/*
+./allData
+./fastqpass
 
 ./outputSpoa/*
 ./outputMedaka/*
