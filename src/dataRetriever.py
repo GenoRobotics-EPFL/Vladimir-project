@@ -1,7 +1,23 @@
 import pysam
+import time
+import os
 
 
 def getReadsFromFile(pathFastq):
+
+    with pysam.FastxFile(pathFastq, "r") as f:
+
+        sequences = list(f)
+
+        return sequences
+
+
+def waitForReadsFromFile(pathFastq):
+
+    # wait for the file to come to existance
+    while not os.path.exists(pathFastq):
+        print(f"Waiting for file: {pathFastq}")
+        time.sleep(10)
 
     with pysam.FastxFile(pathFastq, "r") as f:
 
@@ -16,7 +32,7 @@ def writeReadsToFile(pathFastq, reads):
 
         readsAsOneString = "\n".join([str(entry) for entry in reads])
 
-        f.write(readsAsOneString)
+        f.write(readsAsOneString + "\n")
 
 
 def writeConsensus(pathCons, cons):
@@ -47,3 +63,16 @@ def writeMsaToFile(pathFile, msa):
 
     with open(pathFile, "w+") as f:
         f.write("\n".join(msa))
+
+
+def getLinesFromFile(pathFile):
+
+    with open(pathFile, "r") as f:
+
+        lines = f.readlines()
+
+        lines = list(filter(lambda line: line != "", lines))
+
+        lines = list(map(lambda line: line.replace("\n", ""), lines))
+
+        return lines

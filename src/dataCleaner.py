@@ -5,10 +5,7 @@ import utils
 from dataRetriever import *
 
 
-def removeShortReads(reads):
-
-    minReadLength = 300
-
+def removeShortReads(reads, minReadLength):
     return [read for read in reads if len(read.sequence) >= minReadLength]
 
 
@@ -24,7 +21,7 @@ def findCorrectOrientation(reads, referenceRead=None):
     """ 
     reads now can be the in reverse, and complementary to each other
 
-    from epi2me code wf-amplicon, it is iehter in correct direction or in reverse AND complementary. Can't be just
+    from epi2me code wf-amplicon, it is either in correct direction or in reverse AND complementary. Can't be just
     reverse or just complementary.
     """
 
@@ -86,7 +83,9 @@ def getQualityRead(read):
     return meanQScore
 
 
-def removeBadQualityReads(reads, minReadQscore):
+def removeBadQualityReads(reads):
+
+    minReadQscore = 10
 
     goodQualReads = list(
         filter(lambda read: getQualityRead(read) >= minReadQscore, reads))
@@ -94,11 +93,30 @@ def removeBadQualityReads(reads, minReadQscore):
     return goodQualReads
 
 
+def removeCorruptedReads(reads):
+    """
+    When visualising the distribution of base quality, I noticed that somtimes
+    bases had quality that were way too high. Those are corrupted reads
+    """
+
+    readsCleaned = []
+
+    for read in reads:
+
+        qscores = [ord(ch) - 33 for ch in read.quality]
+
+        if max(qscores) < 80:
+            readsCleaned.append(read)
+
+    return readsCleaned
+
+
 def trimReads(reads):
     """
     https://gigabaseorgigabyte.wordpress.com/2017/06/05/trimming-and-filtering-oxford-nanopore-sequencing-reads/
     """
 
+    # todo: check this perhaps this to too much
     numBasesToTrim = 50
 
     def trimRead(read):
@@ -113,41 +131,65 @@ def trimReads(reads):
     return reads
 
 
-def getCleanReads(reads, maxReadLength, minReadQscore,  referenceRead=None):
+def getCleanReads(reads, geneName, referenceRead=None):
 
-    print(f"Original number of reads: \t{len(reads)}")
+    print(
+        f"Starting cleaning of reads. Original number of reads: \t{len(reads)}")
 
-    reads = removeShortReads(reads)
+    minReadLength = None
+    avg = None
+    maxReadLength = None
+    if geneName == "matK":
+        minReadLength = 300
+        avg = 700
+        maxReadLength = 900
+
+    elif geneName == "rbcL":
+        minReadLength = 300
+        avg = 750
+        maxReadLength = 850
+
+    elif geneName == "psbA-trnH":
+        minReadLength = 300
+        avg = 500
+        maxReadLength = 700
+
+    elif geneName == "ITS":
+        minReadLength = 300
+        avg = 700
+        maxReadLength = 800
+    reads = removeShortReads(reads, minReadLength)
     reads = removeTooLongReads(reads, maxReadLength)
 
-    reads = removeBadQualityReads(reads, minReadQscore)
+    reads = removeBadQualityReads(reads)
+
+    reads = removeCorruptedReads(reads)
 
     # EPI2ME also removes the portion of longest reads as those are usually corrupted
     # here I don't do it as sometimes there are too few reads to clean
 
-    reads = trimReads(reads)
+    # should perhaps also do trimming... but it requires a more complex method than what I did
+    # reads = trimReads(reads)
 
-    reads, referenceReadForOrientation = findCorrectOrientation(reads, referenceRead)
+    reads, referenceReadForOrientation = findCorrectOrientation(
+        reads, referenceRead)
 
     print(f"Number of reads after cleanup: \t{len(reads)}")
 
-    return reads, referenceReadForOrientation 
-
-
+    return reads, referenceReadForOrientation
 
 
 def main():
 
     # do the preprocessing on the original file
     pathInput = sys.argv[1]
-    pathOutput = pathInput + str("_cleaned.fastq")
+    geneName = sys.argv[2]
 
     reads = getReadsFromFile(pathInput)
 
-    maxReadLength = 750
-    minReadQscore = 10
-    reads, _ = getCleanReads(reads, maxReadLength, minReadQscore)
+    reads, _ = getCleanReads(reads, geneName)
 
+    pathOutput = pathInput + "-CLEANED.fastq"
     writeReadsToFile(pathOutput, reads)
 
 

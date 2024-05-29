@@ -7,7 +7,12 @@ from utils import *
 from dataRetriever import *
 
 
-def _getDraftConsensus(pathToReads):
+def getDraftConsensus(pathToReads):
+    """
+    get a conensus of multiple sequences (bases only), using the spoa library.
+    the consensus will compare all sequences together to find the best match.
+    """
+
     print("making draft consensus using spoa")
 
     reads = getReadsFromFile(pathToReads)
@@ -22,59 +27,73 @@ def _getDraftConsensus(pathToReads):
     cons, _ = spoa.poa([cons, *sequences], min_coverage=min_cov, genmsa=False)
 
     # write consensus to file
-    pathOutput = os.path.join("outputSpoa", "draftConsensusSpoa.fasta")
+    pathOutput = os.path.join("outputSpoa", "consensusSpoa.fasta")
     writeConsensus(pathOutput, cons)
 
     return cons
 
 
-def _getConsensusMedaka(pathToReads):
-    print("making final consensus usind medaka")
+def getConsensusMedaka(pathToReads, pathToDraft):
+    print("making consensus using medaka")
 
-    pathToDraft = os.path.join("outputSpoa", "draftConsensusSpoa.fasta")
-    pathToOutputDir = os.path.join("outputMedaka")
+    pathToOutputDir = "./outputMedaka"
 
-    medakaCommand = f"medaka_consensus -i {pathToReads} -d {pathToDraft} -o {pathToOutputDir} -m r941_min_high_g303"
+    medakaCommand = f"medaka_consensus -q -i {pathToReads} -d {pathToDraft} -o {pathToOutputDir} -m r941_min_high_g303 > /dev/null 2> /dev/null"
     os.system(medakaCommand)
 
     # read medaka output
-    pathToOutputConsensus = os.path.join(pathToOutputDir, "consensus.fasta")
-    cons = readConsensus(pathToOutputConsensus)
+    pathToOutputConsensus = os.path.join(pathToOutputDir, "consensus.fastq")
+    cons = getReadsFromFile(pathToOutputConsensus)[0]
+
+    return cons
+
+
+def getConsensusAndQuality(pathToReads):
+
+    # must clean directory in case it exists. Medaka complains otherwise
+    os.system("rm ./outputSpoa/*")
+    os.system("rm ./outputMedaka/*")
+
+    # first get the consensus of spoa as draft consensus
+    getDraftConsensus(pathToReads)
+
+    # use medaka to improve result, by remapping the reads
+    pathToDraft = os.path.join("outputSpoa", "consensusSpoa.fasta")
+    cons = getConsensusMedaka(pathToReads, pathToDraft)
 
     return cons
 
 
 def getConsensus(pathToReads):
-    """
-    get a conensus of multiple sequences (bases only), using the spoa library.
-    the consensus will compare all sequences together to find the best match.
-    """
+
+    cons = getConsensusAndQuality(pathToReads)
+
+    return cons.sequence
+
+
+def getConsensus2080(best20Reads, allReads):
 
     # must clean directory in case it exists. Medaka complains otherwise
-    pathToOutputSpoa = os.path.join("outputSpoa")
-    pathToOutputMedaka = os.path.join("outputMedaka")
-
-    dirToClear = os.path.join(pathToOutputSpoa, "*")
-    os.system(f"rm {dirToClear}")
-    dirToClear = os.path.join(pathToOutputMedaka, "*")
-    os.system(f"rm {dirToClear}")
+    os.system("rm ./outputSpoa/*")
+    os.system("rm ./outputMedaka/*")
 
     # first get the consensus of spoa as draft consensus
-    _getDraftConsensus(pathToReads)
+    getDraftConsensus(best20Reads)
 
     # use medaka to improve result, by remapping the reads
-    cons = _getConsensusMedaka(pathToReads)
+    pathToDraft = os.path.join("outputSpoa", "consensusSpoa.fasta")
+    cons = getConsensusMedaka(allReads, pathToDraft)
 
-    return cons
+    return cons.sequence
 
 
 def main():
 
     pathToReads = sys.argv[1]
 
-    cons = getConsensus(pathToReads)
+    cons = getConsensusAndQuality(pathToReads)
 
-    print(f"\nFinal cons:\n\n{cons} \n")
+    print(f"\nFinal cons:\n\n{str(cons)} \n")
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ num_reads_each_iteration = total_num_reads_atEnd / num_intervals
 num_genes = 48
 
 # number of reads per interation that are for a given gene
-num_reads_per_gene_per_iteration = 400 # int(num_reads_each_iteration / num_genes) + 1
+num_reads_per_gene_per_iteration = int(num_reads_each_iteration / num_genes) + 1
 
 outputDir = "fastqpass"
 
