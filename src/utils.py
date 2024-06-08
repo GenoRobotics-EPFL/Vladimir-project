@@ -1,3 +1,6 @@
+"""
+Util script with methods that other files can use
+"""
 
 def complementary(seq):
     """
@@ -14,8 +17,3 @@ def reverse(seq):
     """
 
     return seq[::-1]
-
-def writeStringToFile(pathFile, str):
-
-    with open(pathFile, "w+") as f:
-        f.write(str)

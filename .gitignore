@@ -1,11 +1,15 @@
 
 
-fastqpass/
+fastqpass/*
 
-outputSpoa/
-outputMedaka/
-outputBlastn/
-outputMinimap/
-outputRacon/
+outputBlastn/*
+outputMedaka/*
+outputMinimap/*
+outputMosdepth/*
+outputRacon/*
+outputSpoa/*
+
+outputPipelineBest/*
+outputPipelineNaive/*
 
 src/__pycache__/

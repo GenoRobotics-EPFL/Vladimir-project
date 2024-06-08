@@ -1,3 +1,0 @@
-chrom	length	bases	mean	min	max
-Consensus	776	4282	5.52	0	9
-total	776	4282	5.52	0	9

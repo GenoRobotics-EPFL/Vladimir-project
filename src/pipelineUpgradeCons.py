@@ -1,9 +1,3 @@
-import sys
-from dataRetriever import *
-from dataCleaner import *
-from consensusMedaka import *
-from identification import identify
-
 """
 the idea of this pipeline is to generate a consensus with medaka on the first iteration.
 On the following iterations, we use medaka to create a consensus where we insert the previous consensus as a read.
@@ -12,6 +6,13 @@ As the result of medaka is a consensus with quality, it was though the quality o
 
 problem: medaka doesn't increase the quality of the consensus over time. On the contrary, it decreases over time, which isn't what we want
 """
+
+import sys
+from dataRetriever import *
+from dataCleaner import *
+from consensusMedaka import *
+from identification import identify
+
 
 maxNumBasesInRead = 750
 minReadQscore = 10

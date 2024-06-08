@@ -1,3 +1,7 @@
+"""
+This file contains all the graphs that were used for the report and debugging.
+"""
+
 import sys
 import os
 import matplotlib.pyplot as plt

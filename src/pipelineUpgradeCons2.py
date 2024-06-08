@@ -1,10 +1,3 @@
-import sys
-from dataRetriever import *
-from dataCleaner import *
-from consensusMedaka import *
-from identification import identify
-from qualityConsensus import *
-
 """
 the idea of this pipeline is to generate a consensus with medaka on the first iteration.
 On the following iterations, we use medaka with as reference sequence the previous consensus.
@@ -12,6 +5,14 @@ On the following iterations, we use medaka with as reference sequence the previo
 problem: medaka doesn't want to use the new reads to improve the previous consensus. It always outputs the reference sequence.
 I also tried giving the previous consensus as a read too, but that also didn't change it.
 """
+
+import sys
+from dataRetriever import *
+from dataCleaner import *
+from consensusMedaka import *
+from identification import identify
+from qualityConsensus import *
+
 
 maxNumBasesInRead = 750
 minReadQscore = 10

@@ -1,14 +1,14 @@
+"""
+the idea of this pipeline is to generate a consensus with medaka on the first iteration.
+On the following iterations, we use minimap to map the new reads on the previous consensus, and we use racon to generate the final consensus of the iteration.
+"""
+
 import sys
 from dataRetriever import *
 from dataCleaner import *
 from consensusMedaka import *
 from consensusMinimap import *
 from identification import identify
-
-"""
-the idea of this pipeline is to generate a consensus with medaka on the first iteration.
-On the following iterations, we use minimap to map the new reads on the previous consensus, and we use racon to generate the final consensus of the iteration.
-"""
 
 minReadQscore = 10
 referenceReadForOrientation = None

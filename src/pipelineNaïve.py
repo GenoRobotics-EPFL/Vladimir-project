@@ -1,3 +1,7 @@
+"""
+This script is the naive pipeline. See the README of the repo to see how to use it.
+"""
+
 import sys
 from dataRetriever import *
 from dataCleaner import *
