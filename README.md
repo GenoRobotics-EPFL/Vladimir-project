@@ -29,9 +29,11 @@ foo@bar:~$ python3 src/simulateRealTimeOutput.py allData/Allium_Ursinum_ITS.fast
 ```
 The script can be used in the background to simulate the sequencer creating a fastq file every minute.
 
+The normal use case to test the pipeline is to first call the `siulateRealTimeOutput.py` script to populate the fastqpass folder, and then launch a pipeline.
+
 ### output
 
-The pipelines will output all their results in their respective output file `outputPipelineBest` and `outputPipelineNaive`.
+The pipelines will output all their results in their respective output folder `outputPipelineBest` and `outputPipelineNaive`.
 The main output file `result.txt` contains the detection result of each iteration (and the consensus). The folder will also contain graph of the depth covreage for instance.
 
 stdout will show the progression of the pipeline.
