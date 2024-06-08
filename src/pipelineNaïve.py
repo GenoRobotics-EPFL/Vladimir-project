@@ -151,19 +151,12 @@ def start(geneName):
         else:
             getReadsLaterIterations(geneName, iterationNum)
 
-        if (iterationNum != 35):
-            iterationNum += 1
-            continue
-
         timeAfterGettingReads.append(time.time())
 
         best20, worse80 = splitReads2080()
 
         # create consensus based on those
-        # consensus = createNewConsensus(best20, worse80)
-        pathAllreads = "./allreads.fastq"
-        writeReadsToFile(pathAllreads, allReads)
-        consensus = getConsensus(pathAllreads)
+        consensus = createNewConsensus(best20, worse80)
 
         timeAfterConsensus.append(time.time())
 
@@ -177,7 +170,7 @@ def start(geneName):
 
         timeEnd.append(time.time())
 
-        # visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
+        visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
@@ -188,14 +181,12 @@ def start(geneName):
         outputFile.write("\n")
         outputFile.flush()
 
-        print(len(consensus))
 
         # check if you can stop the pipeline
-        # canStop = checkEarlyStoppingCriteria(iterationNum, coverages)
-        # if canStop:
-        #     print("Early Stopping criterion met. Stopping pipeline")
-        #     break
-        break
+        canStop = checkEarlyStoppingCriteria(iterationNum, coverages)
+        if canStop:
+            print("Early Stopping criterion met. Stopping pipeline")
+            break
 
         iterationNum += 1
 
@@ -203,7 +194,6 @@ def start(geneName):
 def main():
 
     geneName = sys.argv[1]
-
     start(geneName)
 
 

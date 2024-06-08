@@ -34,6 +34,8 @@ The script can be used in the background to simulate the sequencer creating a fa
 The pipelines will output all their results in their respective output file `outputPipelineBest` and `outputPipelineNaive`.
 The main output file `result.txt` contains the detection result of each iteration (and the consensus). The folder will also contain graph of the depth covreage for instance.
 
+stdout will show the progression of the pipeline.
+
 ### Installation
 
 The first program that the pipelines uses is [Medaka](https://github.com/nanoporetech/medaka). Follow their installation instructions on their repo. The method that worked for me was using the conda channel.

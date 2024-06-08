@@ -1,12 +1,14 @@
 """
-This file takes as input a whole fastq file, and will simulate
+This file takes as input a whole fastq file, and a time between iterations, and will simulate
 the output of the sequencing as if it is happening on the computer.
 
 the calculations are based on report_FAV14934_20221125_1248_ee7626ed.html
 
 usage:
 
-python simulateRealTimeData.py path/to/fastqfile
+python simulateRealTimeData.py path/to/fastqfile timeBetweenIteration
+
+where timeBetween iterations is in minutes
 """
 
 import sys
@@ -14,15 +16,16 @@ import os
 import shutil
 import time
 
+outputDir = "fastqpass"
+
 # total number of reads after 4 hours of sequencing
 total_num_reads_atEnd = 200_000
 
-# how long each interval are (in minutes)
-num_min_interval = 1
+# number of time between each iteration where the sequencer created a new fastq files
+timeBetweenIter = 1 
 
-# number of 10 minute intervals in the time all the reads were generated
-# 4 hours, each with 6 intervals
-num_intervals = (4 * 60) / num_min_interval
+# number of intervals in the time all the reads were generated
+num_intervals = (4 * 60) / timeBetweenIter
 
 # number of passing reads received each iteration
 num_reads_each_iteration = total_num_reads_atEnd / num_intervals
@@ -34,10 +37,7 @@ num_genes = 48
 num_reads_per_gene_per_iteration = int(
     num_reads_each_iteration / num_genes) + 1
 
-outputDir = "fastqpass"
-
-
-def simulateOutput(pathFastq, timeBetweenIter):
+def simulateOutput(pathFastq, sleepBetweenIter):
 
     with open(pathFastq, "r") as fastq:
 
@@ -66,7 +66,7 @@ def simulateOutput(pathFastq, timeBetweenIter):
             with open(outputFilePath, "w+") as outputFile:
                 outputFile.writelines(currIterationContent)
 
-            time.sleep(timeBetweenIter * 60)
+            time.sleep(sleepBetweenIter * 60)
             iterationNum += 1
 
 

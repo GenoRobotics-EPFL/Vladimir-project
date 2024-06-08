@@ -6,8 +6,6 @@ from identification import identify
 from qualityConsensus import *
 from visualise import *
 
-# todo: implement the increase in value of x if consensus doesn't work or if consensus quality is too low
-
 minCoverageDepth = 40
 x = int(1.5 * minCoverageDepth)
 
@@ -59,15 +57,15 @@ def saveQuality(iterationNum, allQualityConsensus, allAvgQualityReads, sampleRea
         "./outputMedaka/calls_to_draft.bam")
     allQualityConsensus.append(qualityConsensus)
 
-    # saveCoverageVisualisation( outputDir, qualityConsensus, coverages, x, iterationNum)
+    saveCoverageVisualisation( outputDir, qualityConsensus, coverages, x, iterationNum)
 
     avgQualityReads = sum(
         map(qualityReadForSorting, sampleReads))
     allAvgQualityReads.append(avgQualityReads)
 
-    # saveQualityReadsOverTime(outputDir, allAvgQualityReads)
-    # saveQualityConsensusOverTime(outputDir, allQualityConsensus)
-    # saveQualityBothOverTime(outputDir, allAvgQualityReads, allQualityConsensus)
+    saveQualityReadsOverTime(outputDir, allAvgQualityReads)
+    saveQualityConsensusOverTime(outputDir, allQualityConsensus)
+    saveQualityBothOverTime(outputDir, allAvgQualityReads, allQualityConsensus)
 
     return coverages
 
@@ -77,7 +75,6 @@ def getIdentification(consensus, db):
     pathCons = f"{outputDir}tempConsForIdent.fasta"
     writeConsensus(pathCons, consensus)
 
-    # db = "rbcL" # "psbA-trnH"
     name, cov, iden = identify(pathCons, db)
 
     return name, cov, iden
@@ -113,7 +110,6 @@ def checkEarlyStoppingCriteria(iterationNum, allQualityConsensus, coverages):
 
 def start(geneName):
 
-    # used for preprocessing
     referenceReadForOrientation = None
     sampleReads = []
 
@@ -151,10 +147,6 @@ def start(geneName):
         sampleReads.sort(key=qualityReadForSorting)
         sampleReads = sampleReads[-x:]
 
-        if (iterationNum != 35):
-            iterationNum += 1
-            continue
-
         timeAfterGettingReads.append(time.time())
 
         # create consensus based on those
@@ -172,7 +164,7 @@ def start(geneName):
         name, cov, iden = getIdentification(consensus, geneName)
 
         timeEnd.append(time.time())
-        # visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
+        visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
@@ -183,10 +175,6 @@ def start(geneName):
         outputFile.write("\n")
         outputFile.flush()
 
-        print(len(consensus))
-
-        break
-
         # check if you can stop the pipeline
         canStop = checkEarlyStoppingCriteria(
             iterationNum, allQualityConsensus, coverages)
@@ -196,29 +184,6 @@ def start(geneName):
 
         iterationNum += 1
 
-    print(allAvgQualityReads)
-    print(allQualityConsensus)
-
-
-def multiplePipelines():
-
-    # nameFile = "allData/Allium_Ursinum_ITS.fastq-DOWNGRADED.fastq"
-    # nameGene = "ITS"
-    # os.system(
-    #     f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
-    # start(nameGene)
-
-    nameFile = "allData/Ficus_religiosa_trnH-psbA_barcode96.fastq"
-    nameGene = "psbA-trnH"
-    os.system(
-        f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
-    start(nameGene)
-
-    # nameFile = "allData/Solanum_Lycopersicum_Qiagen_RPA_rbcL_barcode10.fastq-DOWNGRADED.fastq"
-    # nameGene = "rbcL"
-    # os.system(
-    #     f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
-    # start(nameGene)
 
 
 def main():
@@ -226,7 +191,6 @@ def main():
     geneName = sys.argv[1]
     start(geneName)
 
-    # multiplePipelines()
 
 
 if __name__ == "__main__":
