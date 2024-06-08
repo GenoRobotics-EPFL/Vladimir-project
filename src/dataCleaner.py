@@ -78,7 +78,7 @@ def getQualityRead(read):
     qscores = [ord(ch) - 33 for ch in read.quality]
 
     meanQScore = sum(qscores) / len(qscores)
-    modeQScore = max(set(qscores), key=qscores.count)
+    # modeQScore = max(set(qscores), key=qscores.count)
 
     return meanQScore
 
@@ -136,9 +136,6 @@ def getCleanReads(reads, geneName, referenceRead=None):
     print(
         f"Starting cleaning of reads. Original number of reads: \t{len(reads)}")
 
-    minReadLength = None
-    avg = None
-    maxReadLength = None
     if geneName == "matK":
         minReadLength = 300
         avg = 700

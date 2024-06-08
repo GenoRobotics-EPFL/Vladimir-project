@@ -8,10 +8,6 @@ from visualise import *
 
 # todo: implement the increase in value of x if consensus doesn't work or if consensus quality is too low
 
-# used for preprocessing
-referenceReadForOrientation = None
-allReads = []
-
 minCoverageDepth = 40
 x = int(1.5 * minCoverageDepth)
 
@@ -19,15 +15,6 @@ x = int(1.5 * minCoverageDepth)
 thresholdEarlyStopping = 5
 
 outputDir = "./outputPipelineBest/"
-os.system(f"rm {outputDir}*")  # clean dir to make sure we start fresh
-
-# this is were most of the results are posted every iteration
-outputFile = open(f"{outputDir}results.txt", "w+")
-
-# this is used to plot the quality of the reads in the sample over time
-allAvgQualityReads = []
-# this is used to plot the quality of the consensus over time
-allQualityConsensus = []
 
 
 def qualityReadForSorting(read):
@@ -44,73 +31,45 @@ def qualityReadForSorting(read):
     return len(read.sequence) * getQualityRead(read)
 
 
-def getReadsFirstIteration(geneName):
-
-    # retrieve new reads
-    reads = waitForReadsFromFile("fastqpass/iteration0.fastq")
-
-    global referenceReadForOrientation
-    cleanReads, referenceReadForOrientation = getCleanReads(
-        reads, geneName)
-
-    global allReads
-    allReads = cleanReads
-
-    allReads.sort(key=qualityReadForSorting)
-
-
-def getReadsLaterIterations(geneName, iterationNum):
+def getReadsIteration(geneName, iterationNum, referenceReadForOrientation):
 
     # retrieve new reads
     reads = waitForReadsFromFile(f"fastqpass/iteration{iterationNum}.fastq")
 
-    cleanReads, _ = getCleanReads(
+    cleanReads, referenceReadForOrientationNew = getCleanReads(
         reads, geneName, referenceReadForOrientation)
 
-    # append new reads at the front as they are more likely to have a low quality
-    global allReads
-    allReads += cleanReads
-
-    allReads.sort(key=qualityReadForSorting)
+    return cleanReads, referenceReadForOrientationNew
 
 
-def getBestXReads():
-    # bestXReads = allCleanReadsSorted[:]
-
-    # tenHighest = int(len(allCleanReadsSorted) * 0.05)
-    # bestXReads = bestXReads[:-tenHighest]
-
-    bestXReads = allReads[-x:]
-
-    return bestXReads
-
-
-def createNewConsensus(bestXReads):
+def createNewConsensus(sampleReads):
 
     # write those reads to file so consensus can act on those reads
     pathReads = f"{outputDir}temp_readsForConsensus.fasta"
-    writeReadsToFile(pathReads, bestXReads)
+    writeReadsToFile(pathReads, sampleReads)
 
     consensus = getConsensus(pathReads)
 
     return consensus
 
 
-def saveQuality(bestXReads, iterationNum):
+def saveQuality(iterationNum, allQualityConsensus, allAvgQualityReads, sampleReads):
 
     qualityConsensus, coverages = getQualityConsensus(
         "./outputMedaka/calls_to_draft.bam")
     allQualityConsensus.append(qualityConsensus)
 
-    saveCoverageVisualisation(outputDir,
-                              qualityConsensus, coverages, x, iterationNum)
+    # saveCoverageVisualisation( outputDir, qualityConsensus, coverages, x, iterationNum)
 
-    qualityReads = sum(map(qualityReadForSorting, bestXReads)) / x
-    allAvgQualityReads.append(qualityReads)
+    avgQualityReads = sum(
+        map(qualityReadForSorting, sampleReads))
+    allAvgQualityReads.append(avgQualityReads)
 
-    saveQualityReadsOverTime(outputDir, allAvgQualityReads)
-    saveQualityConsensusOverTime(outputDir, allQualityConsensus)
-    saveQualityBothOverTime(outputDir, allAvgQualityReads, allQualityConsensus)
+    # saveQualityReadsOverTime(outputDir, allAvgQualityReads)
+    # saveQualityConsensusOverTime(outputDir, allQualityConsensus)
+    # saveQualityBothOverTime(outputDir, allAvgQualityReads, allQualityConsensus)
+
+    return coverages
 
 
 def getIdentification(consensus, db):
@@ -124,51 +83,96 @@ def getIdentification(consensus, db):
     return name, cov, iden
 
 
-def checkEarlyStoppingCriteria(iterationNum):
+def checkEarlyStoppingCriteria(iterationNum, allQualityConsensus, coverages):
 
-    if iterationNum <= 3:
+    if iterationNum <= 6:
         return False
 
-    x1 = iterationNum - 4
-    x2 = iterationNum
-    y1 = allQualityConsensus[x1]
-    y2 = allQualityConsensus[x2]
+    x1 = iterationNum - 7
+    x2 = iterationNum - 6
+    meanBefore = (
+        allQualityConsensus[x1] + allQualityConsensus[x2]) / 2
+
+    x1 = iterationNum
+    x2 = iterationNum - 1
+    meanAfter = (
+        allQualityConsensus[x1] + allQualityConsensus[x2]) / 2
 
     maxQual = max(allQualityConsensus)
     minQual = min(allQualityConsensus)
 
-    percentIncreaseSinceStart = ((y2 - y1) / (maxQual - minQual)) * 100
+    percentIncreaseSinceStart = (
+        (meanAfter - meanBefore) / (maxQual - minQual)) * 100
 
-    return percentIncreaseSinceStart < thresholdEarlyStopping
+    firstCondition = percentIncreaseSinceStart < thresholdEarlyStopping
+
+    secondCondition = np.median(coverages) >= minCoverageDepth
+
+    return firstCondition and secondCondition
 
 
 def start(geneName):
 
-    print(f"Starting best x pipeline with gene name {geneName}")
+    # used for preprocessing
+    referenceReadForOrientation = None
+    sampleReads = []
+
+    os.system(f"rm {outputDir}*")  # clean dir to make sure we start fresh
+
+    # this is were most of the results are posted every iteration
+    outputFile = open(f"{outputDir}result.txt", "w+")
+
+    # this is used to plot the quality of the reads in the sample over time
+    allAvgQualityReads = []
+    # this is used to plot the quality of the consensus over time
+    allQualityConsensus = []
+
+    timeStart = []
+    timeAfterGettingReads = []
+    timeAfterConsensus = []
+    timeAfterQualityCheck = []
+    timeEnd = []
 
     iterationNum = 0
+
+    print(f"Starting best x pipeline with gene name {geneName}")
 
     while True:
 
         print(f" --- Starting iteration: {iterationNum} ---")
+        timeStart.append(time.time())
 
         # get the new reads
-        if iterationNum == 0:
-            getReadsFirstIteration(geneName)
-        else:
-            getReadsLaterIterations(geneName, iterationNum)
+        newreads, referenceReadForOrientation = getReadsIteration(
+            geneName, iterationNum, referenceReadForOrientation)
 
-        # take the best x ones received so far
-        bestXReads = getBestXReads()
+        # update sample
+        sampleReads += newreads
+        sampleReads.sort(key=qualityReadForSorting)
+        sampleReads = sampleReads[-x:]
+
+        if (iterationNum != 35):
+            iterationNum += 1
+            continue
+
+        timeAfterGettingReads.append(time.time())
 
         # create consensus based on those
-        consensus = createNewConsensus(bestXReads)
+        consensus = createNewConsensus(sampleReads)
 
-        # save data from this iteratoin
-        saveQuality(bestXReads, iterationNum)
+        timeAfterConsensus.append(time.time())
+
+        # save data from this iteration
+        coverages = saveQuality(
+            iterationNum, allQualityConsensus, allAvgQualityReads, sampleReads)
+
+        timeAfterQualityCheck.append(time.time())
 
         # get identification
         name, cov, iden = getIdentification(consensus, geneName)
+
+        timeEnd.append(time.time())
+        # visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
@@ -179,20 +183,50 @@ def start(geneName):
         outputFile.write("\n")
         outputFile.flush()
 
+        print(len(consensus))
+
+        break
+
         # check if you can stop the pipeline
-        canStop = checkEarlyStoppingCriteria(iterationNum)
+        canStop = checkEarlyStoppingCriteria(
+            iterationNum, allQualityConsensus, coverages)
         if canStop:
             print("Early Stopping criterion met. Stopping pipeline")
             break
 
         iterationNum += 1
 
+    print(allAvgQualityReads)
+    print(allQualityConsensus)
+
+
+def multiplePipelines():
+
+    # nameFile = "allData/Allium_Ursinum_ITS.fastq-DOWNGRADED.fastq"
+    # nameGene = "ITS"
+    # os.system(
+    #     f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
+    # start(nameGene)
+
+    nameFile = "allData/Ficus_religiosa_trnH-psbA_barcode96.fastq"
+    nameGene = "psbA-trnH"
+    os.system(
+        f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
+    start(nameGene)
+
+    # nameFile = "allData/Solanum_Lycopersicum_Qiagen_RPA_rbcL_barcode10.fastq-DOWNGRADED.fastq"
+    # nameGene = "rbcL"
+    # os.system(
+    #     f"python3 src/simulateRealTimeOuput.py {nameFile} 0")
+    # start(nameGene)
+
 
 def main():
 
     geneName = sys.argv[1]
-
     start(geneName)
+
+    # multiplePipelines()
 
 
 if __name__ == "__main__":

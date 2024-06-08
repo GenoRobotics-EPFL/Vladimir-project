@@ -10,7 +10,7 @@ def identify(pathConsensus, db):
     # clean blastn output file
     os.system("rm ./outputBlastn/*")
 
-    blastnCommand = f"blastn -query {pathConsensus} -db {db} -out {pathOutput} -outfmt 5"
+    blastnCommand = f"blastn -query {pathConsensus} -db {db} -out {pathOutput} -outfmt 5 -max_hsps 1"
     os.system(blastnCommand)
 
     # now parse results

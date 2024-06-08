@@ -1,10 +1,13 @@
 
-allData/
+
 fastqpass/
+
 medaka/
 
 outputSpoa/
 outputMedaka/
 outputBlastn/
+outputMinimap/
+outputRacon/
 
 src/__pycache__/

@@ -1,4 +1,4 @@
-""" 
+"""
 
 downgrade a fastq file to make the reads a bit worse
 
@@ -15,12 +15,14 @@ from visualise import *
 
 def removeQualityBase(reads):
 
+    downGradeScore = 3
+
     for read in reads:
 
         newQuality = ""
 
         for quality in read.quality:
-            newQuality += chr(max(ord(quality) - 6, 33))
+            newQuality += chr(max(ord(quality) - downGradeScore, 33))
 
         read.quality = newQuality
 
@@ -55,12 +57,12 @@ def adaptBaseToScore(reads):
 
 def cutReadsInTwo(reads):
 
-    cutReadProb = 0.3
+    cutReadProb = 0.1
 
     for read in reads:
 
         if random.random() < cutReadProb:
-            cutIndex = random.randint(0, len(read.sequence))
+            cutIndex = random.randint(1, len(read.sequence))
             read.sequence = read.sequence[:cutIndex]
             read.quality = read.quality[:cutIndex]
 

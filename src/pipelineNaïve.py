@@ -57,8 +57,6 @@ def getReadsFirstIteration(geneName):
     global allReads
     allReads = cleanReads
 
-    allReads.sort(key=qualityReadForSorting)
-
 
 def getReadsLaterIterations(geneName, iterationNum):
 
@@ -72,10 +70,10 @@ def getReadsLaterIterations(geneName, iterationNum):
     global allReads
     allReads += cleanReads
 
-    allReads.sort(key=qualityReadForSorting)
-
 
 def splitReads2080():
+
+    allReads.sort(key=qualityReadForSorting)
 
     splitIndex = int(len(allReads) * 0.2)
 
@@ -85,16 +83,16 @@ def splitReads2080():
     return best20Reads, worse80Reads
 
 
-def createNewConsensus(best20):
+def createNewConsensus(best20, worse80):
 
     # write those reads to file so consensus can act on those reads
     pathBest20 = f"{outputDir}temp_reads20ForConsensus.fasta"
     writeReadsToFile(pathBest20, best20)
 
-    pathAllReads = f"{outputDir}temp_readsAllForConsensus.fasta"
-    writeReadsToFile(pathAllReads, allReads)
+    pathallReads = f"{outputDir}temp_readsAllForConsensus.fasta"
+    writeReadsToFile(pathallReads, allReads)
 
-    consensus = getConsensus2080(pathBest20, pathAllReads)
+    consensus = getConsensus8020(pathBest20, pathallReads)
 
     return consensus
 
@@ -115,6 +113,8 @@ def saveQuality(iterationNum):
     saveQualityConsensusOverTime(outputDir, allQualityConsensus)
     saveQualityBothOverTime(outputDir, allAvgQualityReads, allQualityConsensus)
 
+    return coverages
+
 
 def getIdentification(consensus, db):
 
@@ -127,22 +127,11 @@ def getIdentification(consensus, db):
     return name, cov, iden
 
 
-def checkEarlyStoppingCriteria(iterationNum):
+def checkEarlyStoppingCriteria(iterationNum, coverages):
 
-    if iterationNum <= 3:
-        return False
+    secondCondition = np.median(coverages) >= 40
 
-    x1 = iterationNum - 4
-    x2 = iterationNum
-    y1 = allQualityConsensus[x1]
-    y2 = allQualityConsensus[x2]
-
-    maxQual = max(allQualityConsensus)
-    minQual = min(allQualityConsensus)
-
-    percentIncreaseSinceStart = ((y2 - y1) / (maxQual - minQual)) * 100
-
-    return percentIncreaseSinceStart < thresholdEarlyStopping
+    return secondCondition
 
 
 def start(geneName):
@@ -162,17 +151,24 @@ def start(geneName):
         else:
             getReadsLaterIterations(geneName, iterationNum)
 
+        if (iterationNum != 35):
+            iterationNum += 1
+            continue
+
         timeAfterGettingReads.append(time.time())
 
         best20, worse80 = splitReads2080()
 
         # create consensus based on those
-        consensus = createNewConsensus(best20)
+        # consensus = createNewConsensus(best20, worse80)
+        pathAllreads = "./allreads.fastq"
+        writeReadsToFile(pathAllreads, allReads)
+        consensus = getConsensus(pathAllreads)
 
         timeAfterConsensus.append(time.time())
 
         # save data from this iteratoin
-        saveQuality(iterationNum)
+        coverages = saveQuality(iterationNum)
 
         timeAfterQualityCheck.append(time.time())
 
@@ -181,8 +177,7 @@ def start(geneName):
 
         timeEnd.append(time.time())
 
-        visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads,
-                               timeAfterConsensus, timeAfterQualityCheck, timeEnd)
+        # visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
@@ -193,11 +188,14 @@ def start(geneName):
         outputFile.write("\n")
         outputFile.flush()
 
+        print(len(consensus))
+
         # check if you can stop the pipeline
-        # canStop = checkEarlyStoppingCriteria(iterationNum)
+        # canStop = checkEarlyStoppingCriteria(iterationNum, coverages)
         # if canStop:
         #     print("Early Stopping criterion met. Stopping pipeline")
         #     break
+        break
 
         iterationNum += 1
 
