@@ -1,7 +1,14 @@
+"""
+THis file is used to get a normal consensus usind Medaka and SPOA.
+no preprocessing is done on the reads
+
+Usage:
+pyhton3 src/consensusMedaka.py ./allData/fastqFile
+"""
+
 import sys
 import os
 import spoa
-import shutil
 
 from utils import *
 from dataRetriever import *

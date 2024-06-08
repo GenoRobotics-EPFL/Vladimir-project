@@ -1,3 +1,7 @@
+"""
+This file executes the blastn queries to detect a plant using a consensus
+"""
+
 import sys
 import os
 from Bio.Blast import NCBIXML

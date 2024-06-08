@@ -1,7 +1,8 @@
 """
+this script can downgrade a fastq file to make the reads a bit worse.
 
-downgrade a fastq file to make the reads a bit worse
-
+you can run this script to store reads to file:
+python3 src/dataDowngrader.py ./pathToReads
 """
 
 import sys
@@ -13,7 +14,7 @@ from dataCleaner import *
 from visualise import *
 
 
-def removeQualityBase(reads):
+def decreaseBasecalingQuality(reads):
 
     downGradeScore = 3
 
@@ -26,7 +27,7 @@ def removeQualityBase(reads):
 
         read.quality = newQuality
 
-    return reads
+    return adaptBaseToScore(reads)
 
 
 def adaptBaseToScore(reads):
@@ -69,23 +70,23 @@ def cutReadsInTwo(reads):
     return reads
 
 
-def downgradeReads(pathToFastq):
+def downgradeReads(reads):
 
-    reads = getReadsFromFile(pathToFastq)
-
-    reads = removeQualityBase(reads)
-    reads = adaptBaseToScore(reads)
+    reads = decreaseBasecalingQuality(reads)
 
     reads = cutReadsInTwo(reads)
 
-    writeReadsToFile(pathToFastq + "-DOWNGRADED.fastq", reads)
+    return reads
 
 
 def main():
 
     pathToFastq = sys.argv[1]
+    reads = getReadsFromFile(pathToFastq)
 
-    downgradeReads(pathToFastq)
+    reads = downgradeReads(reads)
+
+    writeReadsToFile(pathToFastq + "-DOWNGRADED.fastq", reads)
 
 
 if __name__ == "__main__":

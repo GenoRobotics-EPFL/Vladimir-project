@@ -1,3 +1,11 @@
+"""
+This file contains all the preprocessing steps.
+The main entry point is "getCleanReads" that is called by the pipelines.
+
+The script can also be directly executed to clean reads from a fastq file and store them back to file:
+python3 ./src/dataCleaner.py /pathToFastqFile
+"""
+
 import parasail
 import sys
 

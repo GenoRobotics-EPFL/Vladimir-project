@@ -1,3 +1,7 @@
+"""
+This file is used to retrieve and write reads from/to fastq files.
+"""
+
 import pysam
 import time
 import os

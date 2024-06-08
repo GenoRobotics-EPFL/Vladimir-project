@@ -1,3 +1,11 @@
+"""
+THis file is used to create a consenus using minimap, with a reference sequence
+
+useage:
+
+python3 ./src/consensusMinimap /pathToreads /pathToReference
+"""
+
 import sys
 import os
 

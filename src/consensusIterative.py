@@ -1,3 +1,8 @@
+"""
+This file was an attempt to create a iterative metho for creating a consensus where all the reads are aligned on the previous consensus.
+It didn't work.
+"""
+
 import sys
 import os
 import spoa
@@ -5,7 +10,6 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from dataRetriever import *
-import primerAnalysis
 
 
 def spoaCons(sequences):

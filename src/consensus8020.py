@@ -1,3 +1,14 @@
+"""
+This script can be used ot create a consensus using the 20-80 method using SPOA and medaka.
+no preprocessing is done on the reads.
+
+usage:
+python3 src/consensus8020.py allData/Allium_Ursinum_ITS.fastq
+
+"""
+
+
+
 import sys
 import os
 import spoa
@@ -82,14 +93,14 @@ def main():
 
     twenty, eighty = splitReads(reads)
 
-    pathToReadsTwenty = pathToReads + "-twenty"
+    pathToReadsTwenty = "./temp-twenty"
     writeReadsToFile(pathToReadsTwenty, twenty)
-    pathToReadsEighty = pathToReads + "-eighty"
+    pathToReadsEighty = "./temp-eighty"
     writeReadsToFile(pathToReadsEighty, eighty)
 
     cons20 = getConsensus(pathToReadsTwenty)
 
-    pathToDraft = pathToReads + "-cons20"
+    pathToDraft = "./temp-cons20"
     writeConsensus(pathToDraft, cons20)
 
     cons80 = getConsensusMedaka(pathToReadsEighty, pathToDraft)

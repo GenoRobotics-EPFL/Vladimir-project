@@ -31,7 +31,11 @@ The script can be used in the background to simulate the sequencer creating a fa
 
 The normal use case to test the pipeline is to first call the `siulateRealTimeOutput.py` script to populate the fastqpass folder, and then launch a pipeline.
 
-### output
+### Data
+
+The repo contains 3 fastq files, that are stored in the allData folder. Then, three new ones were created using the "dataDowngrader.py" script. Those can be used for debuggint purposes.
+
+### Output
 
 The pipelines will output all their results in their respective output folder `outputPipelineBest` and `outputPipelineNaive`.
 The main output file `result.txt` contains the detection result of each iteration (and the consensus). The folder will also contain graph of the depth covreage for instance.
