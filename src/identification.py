@@ -9,10 +9,14 @@ from Bio.Blast import NCBIXML
 
 def identify(pathConsensus, db):
 
-    pathOutput = "outputBlastn/temp.xml"
-
     # clean blastn output file
-    os.system("rm ./outputBlastn/*")
+    outputDir = "./outputBlastn"
+    if not os.path.exists(outputDir):
+        os.makedirs(outputDir)
+    else:
+        os.system(f"rm {outputDir}/*")
+
+    pathOutput = "outputBlastn/temp.xml"
 
     blastnCommand = f"blastn -query {pathConsensus} -db {db} -out {pathOutput} -outfmt 5 -max_hsps 1"
     os.system(blastnCommand)

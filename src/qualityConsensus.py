@@ -95,7 +95,11 @@ def getValidityCoverage(coverages, numReads):
 
 
 def getCoverageFromConsensus(pathAlignment):
-    os.system("rm ./outputMosdepth/.*")
+    pathToOutputDir = "./outputMosdepth"
+    if not os.path.exists(pathToOutputDir):
+        os.makedirs(pathToOutputDir)
+    else:
+        os.system(f"rm {pathToOutputDir}/*")
 
     # first run mosdepth
     command = f"./src/mosdepth ./outputMosdepth/ {pathAlignment}"

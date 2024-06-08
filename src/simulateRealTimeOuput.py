@@ -16,7 +16,11 @@ import os
 import shutil
 import time
 
-outputDir = "fastqpass"
+outputDir = "./fastqpass/"
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
+else:
+    os.system(f"rm {outputDir}*")
 
 # total number of reads after 4 hours of sequencing
 total_num_reads_atEnd = 200_000

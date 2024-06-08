@@ -18,7 +18,10 @@ allReads = []
 thresholdEarlyStopping = 5
 
 outputDir = "./outputPipelineNaive/"
-os.system(f"rm {outputDir}*")  # clean dir to make sure we start fresh
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
+else:
+    os.system(f"rm {outputDir}*")
 
 # this is were most of the results are posted every iteration
 outputFile = open(f"{outputDir}results.txt", "w+")

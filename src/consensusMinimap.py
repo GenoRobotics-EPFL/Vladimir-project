@@ -14,6 +14,12 @@ from dataRetriever import *
 
 
 def getConsensusMinimap(pathToReads, pathToDraft):
+
+    pathToOutputDir = "./outputMinimap"
+    if not os.path.exists(pathToOutputDir):
+        os.makedirs(pathToOutputDir)
+    else:
+        os.system(f"rm {pathToOutputDir}/*")
     
     pathToMinimapResult = "./outputMinimap/minimapResult.paf"
     command = f"minimap2 -x map-ont {pathToDraft} {pathToReads} > {pathToMinimapResult}"

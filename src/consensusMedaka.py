@@ -21,7 +21,11 @@ def getDraftConsensus(pathToReads):
     """
 
     print("making consensus using spoa")
-    os.system("rm ./outputSpoa/*")
+    outputDir = "./outputSpoa"
+    if not os.path.exists(outputDir):
+        os.makedirs(outputDir)
+    else:
+        os.system(f"rm {outputDir}/*")
 
     reads = getReadsFromFile(pathToReads)
     sequences = [read.sequence for read in reads]
@@ -45,7 +49,10 @@ def getConsensusMedaka(pathToReads, pathToDraft):
     print("making consensus using medaka")
 
     pathToOutputDir = "./outputMedaka"
-    os.system("rm ./outputMedaka/*")
+    if not os.path.exists(pathToOutputDir):
+        os.makedirs(pathToOutputDir)
+    else:
+        os.system(f"rm {pathToOutputDir}/*")
 
     medakaCommand = f"medaka_consensus -q -i {pathToReads} -d {pathToDraft} -o {pathToOutputDir} -m r941_min_high_g303 > /dev/null 2> /dev/null"
     os.system(medakaCommand)

@@ -10,6 +10,7 @@ from consensusMedaka import getConsensus
 from identification import identify
 from qualityConsensus import *
 from visualise import *
+import os
 
 minCoverageDepth = 40
 x = int(1.5 * minCoverageDepth)
@@ -18,6 +19,10 @@ x = int(1.5 * minCoverageDepth)
 thresholdEarlyStopping = 5
 
 outputDir = "./outputPipelineBest/"
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
+else:
+    os.system(f"rm {outputDir}*")
 
 
 def qualityReadForSorting(read):
@@ -117,8 +122,6 @@ def start(geneName):
 
     referenceReadForOrientation = None
     sampleReads = []
-
-    os.system(f"rm {outputDir}*")  # clean dir to make sure we start fresh
 
     # this is were most of the results are posted every iteration
     outputFile = open(f"{outputDir}result.txt", "w+")
