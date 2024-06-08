@@ -44,13 +44,13 @@ To test that the installation works you should be able to execute
 foo@bar:~$ medaka_consensus -h
 ```
 
-Another program required is (SPOA)[https://github.com/rvaser/spoa]. I included a binary in the src/ directory, but maybe it won't work on your machine so you can follow their instructions to compile it from source, and replace the binary of this repo (must be placed in the src/ directory)
+Another program required is [SPOA](https://github.com/rvaser/spoa). I included a binary in the src/ directory, but maybe it won't work on your machine so you can follow their instructions to compile it from source, and replace the binary of this repo (must be placed in the src/ directory)
 You should be able to execture
 ```console
 foo@bar:~$ ./src/spoa --version
 ```
 
-Another program is (Mosdepth)[https://github.com/brentp/mosdepth]. Same thing as for spoa
+Another program is [Mosdepth](https://github.com/brentp/mosdepth). Same thing as for spoa
 You should be able to execture
 ```console
 foo@bar:~$ ./src/mosdepth --version
