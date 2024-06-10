@@ -171,8 +171,8 @@ def saveQualityConsensusOverTime(outputDir, allqualityconsensus):
     # plot the early sotpping line
     if (len(allqualityconsensus) >= 8):
 
-        x1 = len(allqualityconsensus) - 9
-        x2 = len(allqualityconsensus) - 8
+        x1 = len(allqualityconsensus) - 1 - 7
+        x2 = len(allqualityconsensus) - 1 - 6
         meanbefore = (allqualityconsensus[x1] + allqualityconsensus[x2]) / 2
 
         x1 = len(allqualityconsensus) - 1
@@ -185,7 +185,7 @@ def saveQualityConsensusOverTime(outputDir, allqualityconsensus):
         percentIncreaseSinceStart = (
             meanafter - meanbefore) / (maxQual - minQual)
 
-        plt.plot([len(allqualityconsensus) - 9, len(allqualityconsensus) - 1], [meanbefore, meanafter], c="r",
+        plt.plot([len(allqualityconsensus) - 8.5, len(allqualityconsensus) - 1.5], [meanbefore, meanafter], c="r",
                  label=f"early stopping check: {int(percentIncreaseSinceStart * 100)}%")
 
         plt.legend()

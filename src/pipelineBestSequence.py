@@ -56,9 +56,12 @@ def createNewConsensus(sampleReads):
     pathReads = f"{outputDir}temp_readsForConsensus.fasta"
     writeReadsToFile(pathReads, sampleReads)
 
-    consensus = getConsensus(pathReads)
+    try:
+        consensus = getConsensus(pathReads)
+    except Exception:
+        return "", False
 
-    return consensus
+    return consensus, True
 
 
 def saveQuality(iterationNum, allQualityConsensus, allAvgQualityReads, sampleReads):
@@ -119,6 +122,7 @@ def checkEarlyStoppingCriteria(iterationNum, allQualityConsensus, coverages):
 
 
 def start(geneName):
+    global x
 
     referenceReadForOrientation = None
     sampleReads = []
@@ -144,7 +148,10 @@ def start(geneName):
     while True:
 
         print(f" --- Starting iteration: {iterationNum} ---")
+
         timeStart.append(time.time())
+
+        shouldIncreaseX = False
 
         # get the new reads
         newreads, referenceReadForOrientation = getReadsIteration(
@@ -158,7 +165,14 @@ def start(geneName):
         timeAfterGettingReads.append(time.time())
 
         # create consensus based on those
-        consensus = createNewConsensus(sampleReads)
+        consensus, worked = createNewConsensus(sampleReads)
+        if not worked:
+            x = int(1.5 * x)
+            print(f"Increasing x to: {x}")
+
+            iterationNum += 1
+
+            continue
 
         timeAfterConsensus.append(time.time())
 

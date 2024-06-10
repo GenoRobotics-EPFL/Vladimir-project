@@ -59,6 +59,9 @@ def getConsensusMedaka(pathToReads, pathToDraft):
 
     # read medaka output
     pathToOutputConsensus = os.path.join(pathToOutputDir, "consensus.fastq")
+    if not os.path.exists(pathToOutputConsensus):
+        raise Exception("Medaka couldn't create consensus")
+
     outputReads = getReadsFromFile(pathToOutputConsensus)
 
     if len(outputReads) == 0:  # it means medaka couldn't improve the draft consensus, so you just return the draft consensus
