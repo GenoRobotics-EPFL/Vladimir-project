@@ -99,7 +99,7 @@ def getCoverageFromConsensus(pathAlignment):
     if not os.path.exists(pathToOutputDir):
         os.makedirs(pathToOutputDir)
     else:
-        os.system(f"rm {pathToOutputDir}/*")
+        os.system(f"rm {pathToOutputDir}/.*")
 
     # first run mosdepth
     command = f"./src/mosdepth ./outputMosdepth/ {pathAlignment}"

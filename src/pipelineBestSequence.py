@@ -6,7 +6,7 @@ This script is the best-x pipeline. See the README of the repo to see how to use
 import sys
 from dataRetriever import *
 from dataCleaner import *
-from consensusMedaka import getConsensus
+from consensusMedaka import *
 from identification import identify
 from qualityConsensus import *
 from visualise import *
@@ -58,7 +58,7 @@ def createNewConsensus(sampleReads):
 
     try:
         consensus = getConsensus(pathReads)
-    except Exception:
+    except NoConsensusEx:
         return "", False
 
     return consensus, True
@@ -213,7 +213,5 @@ def main():
     geneName = sys.argv[1]
     start(geneName)
 
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

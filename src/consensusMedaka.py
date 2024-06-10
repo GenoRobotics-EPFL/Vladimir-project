@@ -13,6 +13,9 @@ import spoa
 from utils import *
 from dataRetriever import *
 
+class NoConsensusEx(Exception):
+    pass
+
 
 def getDraftConsensus(pathToReads):
     """
@@ -60,7 +63,7 @@ def getConsensusMedaka(pathToReads, pathToDraft):
     # read medaka output
     pathToOutputConsensus = os.path.join(pathToOutputDir, "consensus.fastq")
     if not os.path.exists(pathToOutputConsensus):
-        raise Exception("Medaka couldn't create consensus")
+        raise NoConsensusEx("Medaka couldn't create consensus")
 
     outputReads = getReadsFromFile(pathToOutputConsensus)
 
