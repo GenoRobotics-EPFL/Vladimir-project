@@ -2,8 +2,6 @@
 This script is the best-x pipeline. See the README of the repo to see how to use it.
 """
 
-
-import sys
 from dataRetriever import *
 from dataCleaner import *
 from consensusMedaka import *
@@ -12,17 +10,29 @@ from qualityConsensus import *
 from visualise import *
 import os
 
+# minimum depth coverage that the median depth coverage along the consensus before stopping
 minCoverageDepth = 40
+
+# initial value of x
 x = int(1.5 * minCoverageDepth)
 
 # at what percent in increase in consensus quality do we stop the pipeline ?
 thresholdEarlyStopping = 5
 
+# what gene are we creating a consensus on ?
+# the value must be `matK` or `rbcL` or `psbA-trnH` or `ITS`.
+geneName = "ITS"
+
+# path where the new files are stored
+# if it is a simulation using simulateRealTimeOutput, use "./fastqpass/" as value
+readDir = "./fastqpass/"
+
+# this variable says whether the files of the reads are generated from the simulateRealTimeOutput script
+# if it is a simulation, the reads have as name the ones set by the script, and we only take 1 file per iteration
+# if it isn't a simulation, we take all the new reads we can find in the folder
+isSimulation = True
+
 outputDir = "./outputPipelineBest/"
-if not os.path.exists(outputDir):
-    os.makedirs(outputDir)
-else:
-    os.system(f"rm {outputDir}*")
 
 
 def qualityReadForSorting(read):
@@ -39,15 +49,20 @@ def qualityReadForSorting(read):
     return len(read.sequence) * getQualityRead(read)
 
 
-def getReadsIteration(geneName, iterationNum, referenceReadForOrientation):
+def getReadsIteration(geneName, iterationNum, knownFileNames, referenceReadForOrientation):
 
     # retrieve new reads
-    reads = waitForReadsFromFile(f"fastqpass/iteration{iterationNum}.fastq")
+    if isSimulation:
+        reads = waitForReadsFromFile(
+            f"{readDir}iteration{iterationNum}.fastq")
+        newKnownFileNames = knownFileNames
+    else:
+        reads, newKnownFileNames = waitForNewReadsFile(readDir, knownFileNames)
 
     cleanReads, referenceReadForOrientationNew = getCleanReads(
         reads, geneName, referenceReadForOrientation)
 
-    return cleanReads, referenceReadForOrientationNew
+    return cleanReads, referenceReadForOrientationNew, newKnownFileNames
 
 
 def createNewConsensus(sampleReads):
@@ -70,7 +85,8 @@ def saveQuality(iterationNum, allQualityConsensus, allAvgQualityReads, sampleRea
         "./outputMedaka/calls_to_draft.bam")
     allQualityConsensus.append(qualityConsensus)
 
-    saveCoverageVisualisation( outputDir, qualityConsensus, coverages, x, iterationNum)
+    saveCoverageVisualisation(
+        outputDir, qualityConsensus, coverages, x, iterationNum)
 
     avgQualityReads = sum(
         map(qualityReadForSorting, sampleReads))
@@ -121,7 +137,7 @@ def checkEarlyStoppingCriteria(iterationNum, allQualityConsensus, coverages):
     return firstCondition and secondCondition
 
 
-def start(geneName):
+def start():
     global x
 
     referenceReadForOrientation = None
@@ -129,6 +145,8 @@ def start(geneName):
 
     # this is were most of the results are posted every iteration
     outputFile = open(f"{outputDir}result.txt", "w+")
+
+    knownFileNames = set()
 
     # this is used to plot the quality of the reads in the sample over time
     allAvgQualityReads = []
@@ -151,11 +169,9 @@ def start(geneName):
 
         timeStart.append(time.time())
 
-        shouldIncreaseX = False
-
         # get the new reads
-        newreads, referenceReadForOrientation = getReadsIteration(
-            geneName, iterationNum, referenceReadForOrientation)
+        newreads, referenceReadForOrientation, knownFileNames = getReadsIteration(
+            geneName, iterationNum, knownFileNames, referenceReadForOrientation)
 
         # update sample
         sampleReads += newreads
@@ -171,7 +187,6 @@ def start(geneName):
             print(f"Increasing x to: {x}")
 
             iterationNum += 1
-
             continue
 
         timeAfterConsensus.append(time.time())
@@ -186,7 +201,8 @@ def start(geneName):
         name, cov, iden = getIdentification(consensus, geneName)
 
         timeEnd.append(time.time())
-        visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads, timeAfterConsensus, timeAfterQualityCheck, timeEnd)
+        visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads,
+                               timeAfterConsensus, timeAfterQualityCheck, timeEnd)
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
@@ -198,20 +214,23 @@ def start(geneName):
         outputFile.flush()
 
         # check if you can stop the pipeline
-        canStop = checkEarlyStoppingCriteria(
-            iterationNum, allQualityConsensus, coverages)
-        if canStop:
-            print("Early Stopping criterion met. Stopping pipeline")
+        if checkEarlyStoppingCriteria(
+                iterationNum, allQualityConsensus, coverages):
+            print("Early Stopping criterion met! Stopping pipeline")
             break
 
         iterationNum += 1
 
 
-
 def main():
 
-    geneName = sys.argv[1]
-    start(geneName)
+    if not os.path.exists(outputDir):
+        os.makedirs(outputDir)
+    else:
+        os.system(f"rm {outputDir}*")
+
+    start()
+
 
 if __name__ == '__main__':
     main()

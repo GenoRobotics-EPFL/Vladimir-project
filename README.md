@@ -9,16 +9,20 @@ Two pipelines were implemented: the naive pipeline and the bestx pipeline
 To launch the pipeline, go to the root directory of the repo and execute the pipeline:
 
 ```console
-foo@bar:~$ python3 <pathToPipelineFile> <nameOfGene>
+foo@bar:~$ python3 <pathToPipelineFile>
 ```
 
-where `<pathToPipelineFile>` is either `src/pipelineBestSequence.py` (for the best-x pipeline) or `src/pipelineNaïve.py` (for the naive pipeline), and `<nameOfGene>` is either `matK` or `rbcL` or `psbA-trnH` or `ITS`.
+where `<pathToPipelineFile>` is either `src/pipelineBestSequence.py` (for the best-x pipeline) or `src/pipelineNaïve.py` (for the naive pipeline)
 For instance:
 ```console
-foo@bar:~$ python3 src/pipelineBestSequence rbcL
+foo@bar:~$ python3 src/pipelineBestSequence
 ```
+There are a lot of default parameters at the top of the file, that you might want to change depending on your use case.
 
-The pipelines will take the reads that are in the folder "fastqpass". The pipelines will take each file as one "iteration" of reads coming from the sequencer. In order to populate that folder, the following script can be used:
+The pipeline can be used in two contexes. The first is in real time sequencing. In that case, you must first launch minKNOW and the sequencer, so that you see where the new fastq files will be created. Then copy that path and enter it as parameter in the pipeline. This way, the pipeline will wait for new files to arrive in that directory and will take ALL of the new files when it starts a new iteration.
+The second context is for testing, where the output of the sequencer is simulated. In that case a script can be used (explained below). In that case we only take 1 new fastq file of reads, corresponding to the iteration number.
+
+When doing a simulation, the pipelines will take the reads that are in the folder "fastqpass". The pipelines will take each file as one "iteration" of reads coming from the sequencer. In order to populate that folder, the following script can be used:
 ```console
 foo@bar:~$ python3 src/simulateRealTimeOutput.py <pathToFastqFile> <minutesBeforeNextFile>
 ```

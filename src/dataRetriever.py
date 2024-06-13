@@ -3,6 +3,7 @@ This file is used to retrieve and write reads from/to fastq files.
 """
 
 import pysam
+import subprocess
 import time
 import os
 
@@ -28,6 +29,34 @@ def waitForReadsFromFile(pathFastq):
         sequences = list(f)
 
         return sequences
+
+
+def waitForNewReadsFile(readDir, knownFileNames):
+
+    while True:
+
+        output = subprocess.check_output(["ls", readDir])
+        fileNames = output.decode('utf-8').split("\n")
+
+        newReads = []
+        for fileName in fileNames:
+            if fileName == "":
+                continue
+
+            if fileName not in knownFileNames:
+                print(f"Taking new reads in file: {fileName}")
+
+                knownFileNames.add(fileName)
+
+                reads = getReadsFromFile(readDir + fileName)
+                newReads += reads
+
+        if len(newReads) == 0:
+            print("Waiting for new reads")
+            time.sleep(10)
+            continue
+
+        return newReads, knownFileNames
 
 
 def writeReadsToFile(pathFastq, reads):
