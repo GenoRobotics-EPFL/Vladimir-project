@@ -7,6 +7,10 @@ import os
 from Bio.Blast import NCBIXML
 
 
+class NoIdentification(Exception):
+    pass
+
+
 def identify(pathConsensus, db):
 
     # clean blastn output file
@@ -24,6 +28,10 @@ def identify(pathConsensus, db):
     # now parse results
     blast_records = NCBIXML.parse(open(pathOutput, "r"))
     blast_record = next(blast_records)  # you only have one query
+
+    if len(blast_record.alignments) == 0:
+        raise NoIdentification()
+
     alignment = blast_record.alignments[0]  # you take the best alignment
 
     sumcoverage = 0

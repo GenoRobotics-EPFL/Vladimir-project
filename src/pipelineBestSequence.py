@@ -21,7 +21,7 @@ thresholdEarlyStopping = 5
 
 # what gene are we creating a consensus on ?
 # the value must be `matK` or `rbcL` or `psbA-trnH` or `ITS`.
-geneName = "ITS"
+geneName = "matK"
 
 # path where the new files are stored
 # if it is a simulation using simulateRealTimeOutput, use "./fastqpass/" as value
@@ -104,9 +104,11 @@ def getIdentification(consensus, db):
     pathCons = f"{outputDir}tempConsForIdent.fasta"
     writeConsensus(pathCons, consensus)
 
-    name, cov, iden = identify(pathCons, db)
-
-    return name, cov, iden
+    try:
+        name, cov, iden = identify(pathCons, db)
+        return True, name, cov, iden
+    except:
+        return False, "", 0, 0
 
 
 def checkEarlyStoppingCriteria(iterationNum, allQualityConsensus, coverages):
@@ -181,8 +183,8 @@ def start():
         timeAfterGettingReads.append(time.time())
 
         # create consensus based on those
-        consensus, worked = createNewConsensus(sampleReads)
-        if not worked:
+        consensus, consensusworked = createNewConsensus(sampleReads)
+        if not consensusworked:
             x = int(1.5 * x)
             print(f"Increasing x to: {x}")
 
@@ -198,7 +200,7 @@ def start():
         timeAfterQualityCheck.append(time.time())
 
         # get identification
-        name, cov, iden = getIdentification(consensus, geneName)
+        identWorked, name, cov, iden = getIdentification(consensus, geneName)
 
         timeEnd.append(time.time())
         visualiseExecutionTime(outputDir, timeStart, timeAfterGettingReads,
@@ -206,9 +208,14 @@ def start():
 
         # print results to file
         outputFile.write(f"iteration: {iterationNum}\n")
-        outputFile.write(f"name entry: {name}\n")
-        outputFile.write(f"coverage: {cov}\n")
-        outputFile.write(f"identity: {iden}\n")
+
+        if identWorked:
+            outputFile.write(f"name entry: {name}\n")
+            outputFile.write(f"coverage: {cov}\n")
+            outputFile.write(f"identity: {iden}\n")
+        else:
+            outputFile.write(f"No identification possible\n")
+
         outputFile.write(f"consensus: \n{consensus}\n")
         outputFile.write("\n")
         outputFile.flush()

@@ -144,23 +144,21 @@ def getCleanReads(reads, geneName, referenceRead=None):
     print(
         f"Starting cleaning of reads. Original number of reads: \t{len(reads)}")
 
+    minReadLength = 0
+
     if geneName == "matK":
-        minReadLength = 300
         avg = 700
         maxReadLength = 900
 
     elif geneName == "rbcL":
-        minReadLength = 300
         avg = 750
         maxReadLength = 850
 
     elif geneName == "psbA-trnH":
-        minReadLength = 300
         avg = 500
         maxReadLength = 700
 
     elif geneName == "ITS":
-        minReadLength = 300
         avg = 700
         maxReadLength = 800
     reads = removeShortReads(reads, minReadLength)
