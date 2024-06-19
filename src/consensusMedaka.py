@@ -13,6 +13,7 @@ import spoa
 from utils import *
 from dataRetriever import *
 
+
 class NoConsensusEx(Exception):
     pass
 

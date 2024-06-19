@@ -10,6 +10,8 @@ from qualityConsensus import *
 from visualise import *
 import os
 
+# ! START variables to change depending on use case
+
 # minimum depth coverage that the median depth coverage along the consensus before stopping
 minCoverageDepth = 40
 
@@ -21,7 +23,7 @@ thresholdEarlyStopping = 5
 
 # what gene are we creating a consensus on ?
 # the value must be `matK` or `rbcL` or `psbA-trnH` or `ITS`.
-geneName = "matK"
+geneName = "ITS"
 
 # path where the new files are stored
 # if it is a simulation using simulateRealTimeOutput, use "./fastqpass/" as value
@@ -32,7 +34,10 @@ readDir = "./fastqpass/"
 # if it isn't a simulation, we take all the new reads we can find in the folder
 isSimulation = True
 
+# this is where all the main results are outputed
 outputDir = "./outputPipelineBest/"
+
+# ! END variables to change depending on use case
 
 
 def qualityReadForSorting(read):
@@ -143,6 +148,7 @@ def start():
     global x
 
     referenceReadForOrientation = None
+
     sampleReads = []
 
     # this is were most of the results are posted every iteration
